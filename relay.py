@@ -205,6 +205,7 @@ def main() -> int:
     parser.add_argument("--state", default="state.json", help="상태 파일 경로 (기본: state.json)")
     parser.add_argument("--dry-run", action="store_true", help="슬랙 전송·상태 저장 없이 보낼 내용을 출력")
     parser.add_argument("--show", type=int, default=3, help="dry-run에서 상태 없는 채널의 최근 글 미리보기 개수")
+    parser.add_argument("--rewind", type=int, default=0, help="시험용: 기록된 채널의 마지막 글 번호를 N만큼 되돌려 다시 전송")
     args = parser.parse_args()
 
     if args.dry_run and os.environ.get("GITHUB_ACTIONS") == "true":
@@ -223,6 +224,8 @@ def main() -> int:
 
     state_path = Path(args.state)
     state = load_state(state_path)
+    if args.rewind > 0:
+        state = {k: max(v - args.rewind, 0) for k, v in state.items()}
     session = requests.Session()
     session.headers["User-Agent"] = USER_AGENT
 

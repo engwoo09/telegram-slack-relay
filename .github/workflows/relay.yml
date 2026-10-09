@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: "*/10 * * * *"
   workflow_dispatch:
+    inputs:
+      rewind:
+        description: "시험용: 채널마다 마지막 N건을 다시 전송 (0 = 평소대로)"
+        default: "0"
 
 concurrency:
   group: relay
@@ -38,7 +42,8 @@ jobs:
         env:
           TG_CHANNELS: ${{ secrets.TG_CHANNELS }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: python relay.py --state state.json
+          REWIND: ${{ inputs.rewind || '0' }}
+        run: python relay.py --state state.json --rewind "$REWIND"
 
       - name: Save state
         if: always() && hashFiles('state.json') != ''

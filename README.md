@@ -27,6 +27,7 @@
 | 슬랙 채널 변경, 웹후크 재발급 | 슬랙 앱에서 새 웹후크를 만든 뒤 `gh secret set SLACK_WEBHOOK_URL` |
 | 상태 초기화 | `gh cache list`로 `relay-state-*`를 확인하고 `gh cache delete --all`로 지웁니다. 다음 실행은 첫 실행처럼 기록만 합니다. |
 | 즉시 한 번 실행 | `gh workflow run relay.yml` |
+| 전송 시험 (마지막 N건 다시 보내기) | `gh workflow run relay.yml -f rewind=1` |
 | 최근 실행 확인 | `gh run list --workflow relay.yml --limit 5` |
 | 일시 중지/재개 | `gh workflow disable relay.yml` / `gh workflow enable relay.yml` |
 
