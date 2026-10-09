@@ -20,7 +20,8 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 
 PREVIEW_URL = "https://t.me/s/{channel}"
 USER_AGENT = "Mozilla/5.0 (compatible; telegram-slack-relay/1.0)"
-MAX_TEXT = 3000
+# Slack truncates message text at 40,000 chars; Telegram posts are at most 4,096, so this never cuts in practice.
+MAX_TEXT = 39000
 MAX_BACKFILL_PAGES = 5
 SLACK_INTERVAL_SEC = 1.1
 
@@ -164,7 +165,11 @@ def format_message(title: str, post: Post) -> str:
         body = "_(미디어)_" if post.has_media else "_(본문 없음)_"
     elif post.has_media:
         body += "\n_(미디어 포함)_"
-    return f"*[{slack_escape(title)}]*\n{body}\n<{post.url}|원문 보기>"
+    return (
+        f"*[{slack_escape(title)}]*\n{body}\n\n"
+        f"원문: {post.url}\n"
+        f"게시물 ID: `{post.channel}/{post.post_id}`"
+    )
 
 
 def post_to_slack(session: requests.Session, webhook: str, text: str) -> None:
@@ -268,6 +273,7 @@ def main() -> int:
                 print(f"전송 실패: {type(error).__name__}{detail}")
                 break
             state[channel] = post.post_id
+            save_state(state_path, state)
             sent += 1
             time.sleep(SLACK_INTERVAL_SEC)
 
