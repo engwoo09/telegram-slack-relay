@@ -178,7 +178,8 @@ def post_to_slack(session: requests.Session, webhook: str, text: str) -> None:
             time.sleep(3)
             continue
         if resp.status_code != 200:
-            raise RuntimeError(f"slack webhook HTTP {resp.status_code}")
+            code = re.sub(r"[^a-z_]", "", resp.text.strip().lower())[:40]
+            raise RuntimeError(f"slack webhook HTTP {resp.status_code} {code}")
         return
     raise RuntimeError("slack webhook rate-limited")
 
@@ -254,8 +255,11 @@ def main() -> int:
                 continue
             try:
                 post_to_slack(session, webhook, message)
-            except Exception:
+            except Exception as error:
                 send_failed += 1
+                # requests exceptions can embed the webhook URL; only our own RuntimeError text is safe to log.
+                detail = f": {error}" if isinstance(error, RuntimeError) else ""
+                print(f"전송 실패: {type(error).__name__}{detail}")
                 break
             state[channel] = post.post_id
             sent += 1
