@@ -2,7 +2,7 @@ name: relay
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "3-59/10 * * * *"
   workflow_dispatch:
     inputs:
       rewind:
@@ -60,6 +60,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ "$(date -u +%H)" = "00" ] && [ "$(date -u +%M)" -lt 10 ]; then
+          if [ "$(date -u +%H)" = "00" ] && [ "$(date -u +%M)" -lt 13 ]; then
             gh api -X PUT "repos/${{ github.repository }}/actions/workflows/relay.yml/enable" --silent
           fi
