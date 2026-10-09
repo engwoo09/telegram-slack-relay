@@ -218,9 +218,15 @@ def main() -> int:
         print("채널 목록이 비어 있습니다 (TG_CHANNELS 또는 --channels).", file=sys.stderr)
         return 2
 
-    webhook = os.environ.get("SLACK_WEBHOOK_URL", "")
+    webhook = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
     if not args.dry_run and not webhook:
         print("SLACK_WEBHOOK_URL이 없습니다.", file=sys.stderr)
+        return 2
+    if not args.dry_run and not webhook.startswith("https://hooks.slack.com/"):
+        print(
+            f"SLACK_WEBHOOK_URL이 https://hooks.slack.com/ 으로 시작하지 않습니다 (길이 {len(webhook)}).",
+            file=sys.stderr,
+        )
         return 2
 
     state_path = Path(args.state)
