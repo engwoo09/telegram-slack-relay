@@ -2,7 +2,7 @@ name: relay
 
 on:
   schedule:
-    - cron: "3-59/10 * * * *"
+    - cron: "10 * * * *"
   workflow_dispatch:
     inputs:
       rewind:
@@ -55,11 +55,11 @@ jobs:
       # Scheduled workflows in public repos are auto-disabled after 60 days without activity.
       # Calling enable on every run could re-register the schedule, so only do it once a day.
       - name: Keep schedule enabled
-        if: always() && github.event_name == 'schedule'
+        if: always()
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ "$(date -u +%H)" = "00" ] && [ "$(date -u +%M)" -lt 13 ]; then
+          if [ "$(date -u +%H)" = "00" ]; then
             gh api -X PUT "repos/${{ github.repository }}/actions/workflows/relay.yml/enable" --silent
           fi

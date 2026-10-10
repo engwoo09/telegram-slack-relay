@@ -3,7 +3,7 @@
 ## 작업 카드
 
 - **목표**: 구독 중인 공개 텔레그램 채널의 새 글을 슬랙 채널 하나로 옮긴다. 맥이 꺼져 있어도 GitHub Actions에서 동작해야 한다.
-- **상태**: 운영 중. 공개 레포 `engwoo09/telegram-slack-relay`, 워크플로 활성(10분 cron). 시크릿 `TG_CHANNELS`(1개 채널)와 `SLACK_WEBHOOK_URL` 등록 완료. 슬랙 수신처는 mrmk 워크스페이스의 비공개 채널 `#telegram-relay`.
+- **상태**: 운영 중. 공개 레포 `engwoo09/telegram-slack-relay`, 워크플로 활성(1시간 cron `10 * * * *`, 사용자 결정 2026-10-10). 시크릿 `TG_CHANNELS`(1개 채널)와 `SLACK_WEBHOOK_URL` 등록 완료. 슬랙 수신처는 mrmk 워크스페이스의 비공개 채널 `#telegram-relay`.
 - **경로**: `/Users/gim-yeong-u/Server/workspace/telegram-slack-relay`
 - **다음 행동**: 없음. 채널을 추가할 때는 README의 운영 표를 따른다.
 - **금지사항**
@@ -18,7 +18,7 @@
 
 - `relay.py` — 미리보기 파싱, 상태 비교, 슬랙 전송, `--dry-run`
 - `requirements.txt`, `.gitignore`
-- `.github/workflows/relay.yml` — 10분 cron, cache 상태, 60일 비활성 방지
+- `.github/workflows/relay.yml` — 1시간 cron, cache 상태, 60일 비활성 방지(UTC 0시대 실행에서만 호출)
 - `README.md`, `HANDOFF.md`
 
 ## 검증 결과
@@ -33,7 +33,7 @@
 
 ## 미검증
 
-- **예약 실행(schedule)이 아직 한 번도 돌지 않았다.** 2026-10-09 06:12 UTC에 다시 켠 뒤 07:41 UTC까지 기록 0건이다. 새 레포에서 몇 시간 늦게 시작되는 GitHub의 알려진 현상으로 보인다. 07:41 UTC에 cron을 `3-59/10`(정각 회피)으로 바꿔 다시 등록했다. 확인 방법은 `gh run list --workflow relay.yml --event schedule`. 몇 시간이 지나도 0건이면 외부 cron 서비스로 `workflow_dispatch` API를 호출하는 방식으로 바꾼다.
+- **GitHub 예약 실행이 크게 밀린다.** 2026-10-09 14:39 UTC부터 돌기 시작했지만, 10분 cron인데도 실제 간격은 4~5시간이었다. 10-10 04:05 UTC 글 2183, 2184가 제때 전달되지 않아 07:35 UTC에 수동 실행으로 보냈다. 사용자가 1시간 주기면 충분하다고 해서 cron을 `10 * * * *`로 바꿨다. 정시성이 필요하면 cron-job.org 같은 외부 서비스로 `workflow_dispatch` API를 1시간마다 호출한다(레포 하나, Actions 쓰기 권한만 가진 fine-grained 토큰 사용).
 - ChatGPT 예약 작업 "젤란드 새 글 한국어 번역"(1시간마다 `#telegram-relay` 확인)이 실제로 번역 알림을 보내는지. 시험용으로 07:15 UTC에 글 2182를 다시 보내 두었다.
 - 실제 새 글이 올라왔을 때 예약 실행으로 도착하는지(다음 새 글이 올라오면 자연히 확인된다)
 - 장기 운영: 60일 비활성 방지 단계가 실제로 스케줄을 유지하는지
